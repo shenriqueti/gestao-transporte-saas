@@ -12,7 +12,7 @@
 
 ### Session 2026-09-18
 
-- Q: Should the first version include editing existing passenger records, or only listing and registering passengers? → A: Apenas listagem e cadastro; edição será tratada em uma funcionalidade posterior.
+- Q: Should the first version include editing existing passenger records, or only listing and registering passengers? → A: A primeira versão também permite editar registros existentes; exclusão e edição devem exigir autenticação.
 - Q: A interface deve exigir autenticação para visualizar e cadastrar passageiros na primeira versão? → A: Sim. A autenticação é obrigatória antes de acessar a lista ou o cadastro.
 - Q: Existe um sistema de autenticação existente que a interface deve reutilizar? → A: Sim. A interface deve reutilizar o sistema de autenticação existente.
 
@@ -48,18 +48,18 @@ Um coordenador ou funcionário autenticado precisa cadastrar rapidamente um novo
 
 ---
 
-### User Story 3 - Consultar detalhes do passageiro (Priority: P2)
+### User Story 3 - Consultar e corrigir detalhes do passageiro (Priority: P2)
 
-The operation team may need to review the details of a passenger after initial registration. The interface must support consulta dos dados sem edição, sem exigir que o usuário abandone a experiência mobile ou dependa de um fluxo exclusivo para desktop.
+The operation team may need to review and correct the details of a passenger after initial registration. The interface must support consultation and editing without requiring a desktop-only flow.
 
 **Why this priority**: Consultar detalhes complementa a listagem e apoia a operação diária, mas é secundário ao carregamento da lista e ao cadastro inicial. A edição permanece fora do escopo desta versão.
 
-**Independent Test**: Pode ser testado abrindo um registro de passageiro e confirmando que seus dados são exibidos corretamente, sem oferecer controles de alteração.
+**Independent Test**: Pode ser testado abrindo um registro, editando um campo e confirmando que os dados atualizados são exibidos corretamente.
 
 **Acceptance Scenarios**:
 
 1. **Given** a passenger record is available, **When** the operator opens it for review, **Then** the app displays the stored details in a format adequado para consulta em dispositivos móveis.
-2. **Given** a passenger record is displayed, **When** the operator attempts to find an editing action, **Then** the app does not offer editing controls and mantém claro que alterações serão disponibilizadas em uma versão posterior.
+2. **Given** a passenger record is displayed, **When** the operator edits valid data and saves, **Then** the API updates the record and the list reflects the new values.
 
 ---
 
@@ -82,7 +82,7 @@ The operation team may need to review the details of a passenger after initial r
 - **FR-006**: The system MUST validate required fields before submitting the registration form and MUST reject incomplete or invalid submissions clearly.
 - **FR-007**: The system MUST send valid registration submissions to the backend API and MUST provide immediate success or error feedback to the user.
 - **FR-008**: The system MUST handle empty, loading, and failed states for the passenger list with clear, understandable guidance.
-- **FR-009**: The system MUST allow users to review passenger details in the mobile workflow, but MUST NOT provide editing or update actions in this version.
+- **FR-009**: The system MUST allow users to review and edit passenger details in the mobile workflow.
 - **FR-010**: The system MUST surface backend and validation errors in plain language so users understand what to correct or retry.
 - **FR-011**: The system MUST preserve the source of truth in the backend and must not silently claim success when the API rejects a change.
 - **FR-012**: The system MUST use the existing authentication system and MUST NOT create a parallel login or permission mechanism for this feature.
