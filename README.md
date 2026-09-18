@@ -94,7 +94,7 @@ Remove um aluno pelo identificador.
 
 Payload (JSON):
 
-JSON
+```json
 {
   "nome": "Nome do Aluno",
   "escola": "Nome da Escola",
@@ -105,5 +105,7 @@ JSON
   "responsavel": "Nome do Responsável",
   "telefone": "21999999999"
 }
+```
+
 👨‍💻 Autor
 Desenvolvido por Sergio Henrique como parte de um projeto focado em soluções reais para o setor de transporte escolar e evolução técnica em desenvolvimento web.
