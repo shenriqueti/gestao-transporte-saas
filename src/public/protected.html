@@ -84,6 +84,51 @@
       </div>
       <ul id="charge-list" class="charge-list"></ul>
     </section>
+    <section class="panel" id="route-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Operação diária</p>
+          <h2>Rotas e embarques</h2>
+        </div>
+        <button id="route-refresh-button" class="secondary" type="button">Atualizar</button>
+      </div>
+      <p id="route-message" class="message" role="status" aria-live="polite"></p>
+      <form id="route-form" class="student-form">
+        <label>Nome da rota<input name="nome" required></label>
+        <label>Descrição<input name="descricao"></label>
+        <button type="submit">Criar rota</button>
+        <button id="route-cancel-button" class="secondary" type="button" hidden>Cancelar edição</button>
+      </form>
+      <div class="route-controls">
+        <label>Rota
+          <select id="route-selector"><option value="">Selecione uma rota</option></select>
+        </label>
+        <label>Adicionar aluno
+          <select id="route-student-selector"><option value="">Selecione um aluno</option></select>
+        </label>
+        <button id="add-route-student-button" type="button">Adicionar passageiro</button>
+      </div>
+      <ul id="route-list" class="route-list"></ul>
+      <div id="route-passenger-panel" hidden>
+        <h3>Passageiros da rota</h3>
+        <p class="muted">Use subir/descer para definir a ordem de atendimento.</p>
+        <ul id="route-passenger-list" class="route-list"></ul>
+      </div>
+      <div class="boarding-controls">
+        <label>Data do embarque<input id="boarding-date" type="date"></label>
+        <button id="load-boarding-button" type="button">Carregar embarques</button>
+      </div>
+      <ul id="boarding-list" class="boarding-list"></ul>
+      <div class="history-heading">
+        <h3>Histórico de embarques</h3>
+      </div>
+      <div class="route-controls">
+        <label>Data inicial<input id="history-start" type="date"></label>
+        <label>Data final<input id="history-end" type="date"></label>
+        <button id="load-history-button" type="button">Consultar histórico</button>
+      </div>
+      <ul id="history-list" class="boarding-list"></ul>
+    </section>
   </main>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

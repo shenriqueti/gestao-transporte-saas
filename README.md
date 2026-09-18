@@ -67,7 +67,7 @@ Supabase; não há cadastro público.
 
 ### Autenticação
 
-As rotas de alunos e mensalidades exigem uma sessão válida do Supabase.
+As rotas de alunos, mensalidades, rotas e embarques exigem uma sessão válida do Supabase.
 O navegador envia o token atual no cabeçalho HTTP `Authorization` usando o esquema
 padrão de token. Credenciais ausentes ou inválidas retornam `401`; indisponibilidade
 do provedor retorna `503`.
@@ -109,6 +109,26 @@ mensalidade e a data não pode ser futura.
 As mensalidades preservam um histórico com nome e escola do aluno. A migração
 `supabase/migrations/20260918183000_create_mensalidades.sql` usa `ON DELETE SET NULL`
 para manter esse histórico quando um aluno é removido da operação.
+
+### Rotas e embarques
+
+Antes de usar a operação diária, aplique a migração
+`supabase/migrations/20260918192000_create_rotas_embarques.sql` no Supabase.
+Em seguida, aplique `supabase/migrations/20260918193000_align_rotas_api_access.sql`
+para atualizar o cache do PostgREST e manter o acesso alinhado ao middleware de
+autenticação da API.
+
+- `GET/POST /api/rotas` lista ou cria rotas ativas.
+- `PUT/DELETE /api/rotas/:id` edita ou desativa uma rota; a desativação preserva passageiros e histórico.
+- `GET/POST /api/rotas/:id/alunos` lista ou associa alunos à rota.
+- `PUT /api/rotas/:id/alunos/ordem` salva a ordem completa dos passageiros.
+- `GET /api/rotas/:id/embarques?data=AAAA-MM-DD` consulta a lista diária, inclusive para datas futuras.
+- `PUT /api/rotas/:id/embarques/:alunoId` registra `Embarcou`, `Faltou` ou `Não utilizará` somente para hoje ou datas passadas.
+- `GET /api/embarques` consulta o histórico por `rota_id`, `aluno_id`, `data_inicio` e `data_fim`.
+
+O histórico mantém snapshots do nome e da escola e é preservado indefinidamente após a
+remoção operacional do aluno. Um aluno pode participar de várias rotas, mas apenas uma
+vez em cada rota.
 
 Payload (JSON):
 
