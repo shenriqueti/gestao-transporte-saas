@@ -19,10 +19,13 @@ gestao-transporte-saas/
 ├── src/
 │   ├── config/
 │   │   └── supabase.js     # Configuração da conexão com o Supabase
+│   ├── middleware/
+│   │   └── authMiddleware.js
 │   ├── controllers/        # Controladores de lógica de negócio (em expansão)
 │   ├── models/             # Modelos de dados
+│   ├── public/              # Login e área protegida
 │   ├── routes/
-│   │   └── alunoRoutes.js  # Rotas de cadastro e listagem de alunos
+│   │   └── alunoRoutes.js  # Rotas de cadastro, edição, listagem e remoção
 │   └── server.js           # Ponto de entrada da aplicação Express
 ├── .env                    # Variáveis de ambiente (não versionado)
 ├── .gitignore
@@ -34,39 +37,82 @@ Certifique-se de ter o Node.js (v20 ou superior) instalado na sua máquina.
 
 Clone o repositório:
 
-Bash
-git clone [https://github.com/riquetvs/gestao-transporte-saas.git](https://github.com/riquetvs/gestao-transporte-saas.git)
+```bash
+git clone https://github.com/shenriqueti/gestao-transporte-saas.git
 cd gestao-transporte-saas
+```
 Instale as dependências:
 
-Bash
+```bash
 npm install
+```
 Configure as variáveis de ambiente:
-Crie um arquivo .env na raiz do projeto seguindo o modelo abaixo e insira as suas credenciais do Supabase:
+Copie `.env.example` para `.env` e insira as credenciais do Supabase. Nunca
+versione o arquivo `.env` ou registre suas chaves em logs:
 
-Snippet de código
+```dotenv
 PORT=3333
 SUPABASE_URL=sua_url_do_supabase_aqui
 SUPABASE_KEY=sua_chave_anon_aqui
+```
 Inicie o servidor em modo de desenvolvimento:
 
-Bash
+```bash
 npm run dev
-O servidor estará rodando em http://localhost:3333.
+```
+
+O servidor estará rodando em http://localhost:3333. Abra essa URL para acessar a
+tela de login. Os usuários autorizados devem ser criados manualmente no painel do
+Supabase; não há cadastro público.
+
+### Autenticação
+
+As rotas de alunos e mensalidades exigem uma sessão válida do Supabase.
+O navegador envia o token atual no cabeçalho HTTP `Authorization` usando o esquema
+padrão de token. Credenciais ausentes ou inválidas retornam `401`; indisponibilidade
+do provedor retorna `503`.
 
 📌 Endpoints da API
 Alunos / Passageiros
-GET /api/alunos
+GET /api/alunos (requer autenticação)
 
 Retorna a lista de todos os alunos cadastrados.
 
-POST /api/alunos
+POST /api/alunos (requer autenticação)
 
 Cadastra um novo aluno no sistema.
 
+Cadastros com os mesmos dados de um aluno existente são rejeitados com `409`.
+
+PUT /api/alunos/:id (requer autenticação)
+
+Atualiza os dados de um aluno existente.
+
+DELETE /api/alunos/:id (requer autenticação)
+
+Remove um aluno pelo identificador.
+
+### Mensalidades
+
+`GET /api/mensalidades` lista as cobranças e aceita os filtros opcionais
+`aluno_id`, `competencia` (`AAAA-MM`) e `status` (`Pendente`, `Vencida` ou
+`Pago`).
+
+`POST /api/mensalidades` registra uma cobrança mensal. O corpo deve conter
+`aluno_id`, `competencia`, `valor` e `dia_vencimento`. Não é possível registrar
+duas cobranças para o mesmo aluno e competência; a API retorna `409`.
+
+`PUT /api/mensalidades/:id/pagamento` registra a quitação integral com
+`data_pagamento` e `valor_pago`. O valor precisa ser exatamente igual ao da
+mensalidade e a data não pode ser futura.
+
+As mensalidades preservam um histórico com nome e escola do aluno. A migração
+`supabase/migrations/20260918183000_create_mensalidades.sql` usa `ON DELETE SET NULL`
+para manter esse histórico quando um aluno é removido da operação.
+
 Payload (JSON):
 
-JSON
+```json
 {
   "nome": "Nome do Aluno",
   "escola": "Nome da Escola",
@@ -77,5 +123,7 @@ JSON
   "responsavel": "Nome do Responsável",
   "telefone": "21999999999"
 }
+```
+
 👨‍💻 Autor
 Desenvolvido por Sergio Henrique como parte de um projeto focado em soluções reais para o setor de transporte escolar e evolução técnica em desenvolvimento web.
