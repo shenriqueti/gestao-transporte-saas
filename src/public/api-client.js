@@ -21,9 +21,6 @@
             window.location.replace('/');
             throw new Error('Sua sessão expirou. Entre novamente.');
         }
-        if (response.status === 503) {
-            throw new Error('Serviço de autenticação temporariamente indisponível.');
-        }
         if (!response.ok) {
             const body = await response.json().catch(() => ({}));
             throw new Error(body.error || 'Não foi possível concluir a operação.');

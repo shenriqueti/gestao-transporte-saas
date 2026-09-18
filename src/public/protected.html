@@ -38,6 +38,52 @@
         <button id="cancel-edit-button" class="secondary" type="button" hidden>Cancelar edição</button>
       </form>
     </section>
+    <section class="panel" id="finance-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Controle financeiro</p>
+          <h2>Mensalidades</h2>
+        </div>
+        <button id="finance-refresh-button" class="secondary" type="button">Atualizar</button>
+      </div>
+      <p id="finance-message" class="message" role="status" aria-live="polite"></p>
+      <form id="charge-form" class="student-form">
+        <label>Aluno
+          <select name="aluno_id" id="charge-student" required>
+            <option value="">Selecione um aluno</option>
+          </select>
+        </label>
+        <label>Competência
+          <input name="competencia" type="month" required>
+        </label>
+        <label>Valor da mensalidade
+          <input name="valor" type="number" min="0.01" step="0.01" required>
+        </label>
+        <label>Dia do vencimento
+          <input name="dia_vencimento" type="number" min="1" max="31" required>
+        </label>
+        <button type="submit">Registrar mensalidade</button>
+      </form>
+      <div class="finance-filters">
+        <label>Filtrar aluno
+          <select id="finance-student-filter">
+            <option value="">Todos os alunos</option>
+          </select>
+        </label>
+        <label>Filtrar competência
+          <input id="finance-competence-filter" type="month">
+        </label>
+        <label>Status
+          <select id="finance-status-filter">
+            <option value="">Todos</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Vencida">Vencida</option>
+            <option value="Pago">Pago</option>
+          </select>
+        </label>
+      </div>
+      <ul id="charge-list" class="charge-list"></ul>
+    </section>
   </main>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

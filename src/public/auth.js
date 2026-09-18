@@ -75,9 +75,27 @@
                 item.append(details, editButton, removeButton);
                 return item;
             }));
+            populateStudentSelectors(students);
             message.textContent = students.length ? '' : 'Nenhum aluno cadastrado.';
         } catch (error) {
             message.textContent = error.message;
+        }
+
+        function populateStudentSelectors(students) {
+            const selectors = [
+                document.querySelector('#charge-student'),
+                document.querySelector('#finance-student-filter')
+            ];
+            selectors.forEach((select) => {
+                if (!select) return;
+                const selected = select.value;
+                const emptyLabel = select.id === 'charge-student' ? 'Selecione um aluno' : 'Todos os alunos';
+                select.replaceChildren(new Option(emptyLabel, ''));
+                students.forEach((student) => {
+                    select.append(new Option(`${student.nome} - ${student.escola}`, student.id));
+                });
+                select.value = selected;
+            });
         }
     }
 
@@ -142,7 +160,123 @@
         });
     }
 
+    function financeQuery() {
+        const params = new URLSearchParams();
+        const studentId = document.querySelector('#finance-student-filter')?.value;
+        const competence = document.querySelector('#finance-competence-filter')?.value;
+        const status = document.querySelector('#finance-status-filter')?.value;
+        if (studentId) params.set('aluno_id', studentId);
+        if (competence) params.set('competencia', competence);
+        if (status) params.set('status', status);
+        const query = params.toString();
+        return query ? `/api/mensalidades?${query}` : '/api/mensalidades';
+    }
+
+    function formatMoney(value) {
+        return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function renderCharges(charges) {
+        const list = document.querySelector('#charge-list');
+        const message = document.querySelector('#finance-message');
+        if (!list || !message) return;
+        list.replaceChildren(...charges.map((charge) => {
+            const item = document.createElement('li');
+            const header = document.createElement('div');
+            header.className = 'charge-header';
+            const title = document.createElement('strong');
+            title.textContent = `${charge.aluno_nome} - ${charge.competencia.slice(0, 7)}`;
+            const status = document.createElement('span');
+            status.className = `status status-${charge.status.toLowerCase()}`;
+            status.textContent = charge.status;
+            header.append(title, status);
+            const details = document.createElement('span');
+            details.textContent = `${formatMoney(charge.valor)} | Vencimento: dia ${charge.dia_vencimento}`;
+            item.append(header, details);
+            if (charge.status === 'Pago') {
+                const payment = document.createElement('span');
+                payment.textContent = `Pago em ${charge.data_pagamento} por ${formatMoney(charge.valor_pago)}${charge.pago_em_atraso ? ' (em atraso)' : ''}.`;
+                item.append(payment);
+            } else {
+                const form = document.createElement('form');
+                form.className = 'payment-form';
+                form.innerHTML = `
+                    <label>Data do pagamento<input name="data_pagamento" type="date" max="${new Date().toISOString().slice(0, 10)}" required></label>
+                    <label>Valor recebido<input name="valor_pago" type="number" min="${charge.valor}" step="0.01" value="${charge.valor}" required></label>
+                    <button type="submit">Marcar como pago</button>
+                `;
+                form.addEventListener('submit', (event) => payCharge(event, charge));
+                item.append(form);
+            }
+            return item;
+        }));
+        message.textContent = charges.length ? '' : 'Nenhuma mensalidade encontrada.';
+    }
+
+    async function loadCharges() {
+        const message = document.querySelector('#finance-message');
+        if (!message || !window.apiClient) return;
+        message.textContent = 'Carregando mensalidades...';
+        try {
+            const charges = await window.apiClient.request(financeQuery());
+            renderCharges(charges);
+        } catch (error) {
+            message.textContent = error.message;
+        }
+    }
+
+    async function payCharge(event, charge) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const message = document.querySelector('#finance-message');
+        const payload = Object.fromEntries(new FormData(form));
+        payload.valor_pago = Number(payload.valor_pago);
+        try {
+            await window.apiClient.request(`/api/mensalidades/${encodeURIComponent(charge.id)}/pagamento`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            message.textContent = 'Pagamento registrado com sucesso.';
+            await loadCharges();
+        } catch (error) {
+            message.textContent = error.message;
+        }
+    }
+
+    const chargeForm = document.querySelector('#charge-form');
+    if (chargeForm) {
+        chargeForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const message = document.querySelector('#finance-message');
+            const payload = Object.fromEntries(new FormData(chargeForm));
+            payload.valor = Number(payload.valor);
+            payload.dia_vencimento = Number(payload.dia_vencimento);
+            try {
+                await window.apiClient.request('/api/mensalidades', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                chargeForm.reset();
+                message.textContent = 'Mensalidade registrada com sucesso.';
+                await loadCharges();
+            } catch (error) {
+                message.textContent = error.message;
+            }
+        });
+    }
+
+    ['#finance-refresh-button', '#finance-student-filter', '#finance-competence-filter', '#finance-status-filter']
+        .forEach((selector) => {
+            const element = document.querySelector(selector);
+            if (element) element.addEventListener('change', loadCharges);
+        });
+    const financeRefresh = document.querySelector('#finance-refresh-button');
+    if (financeRefresh) financeRefresh.addEventListener('click', loadCharges);
+
     redirectForSession().then(() => {
-        if (isProtectedPage) loadStudents();
+        if (isProtectedPage) {
+            loadStudents();
+            loadCharges();
+        }
     });
 })();

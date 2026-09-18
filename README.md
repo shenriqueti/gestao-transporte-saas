@@ -67,7 +67,7 @@ Supabase; não há cadastro público.
 
 ### Autenticação
 
-As rotas `GET /api/alunos` e `POST /api/alunos` exigem uma sessão válida do Supabase.
+As rotas de alunos e mensalidades exigem uma sessão válida do Supabase.
 O navegador envia o token atual no cabeçalho HTTP `Authorization` usando o esquema
 padrão de token. Credenciais ausentes ou inválidas retornam `401`; indisponibilidade
 do provedor retorna `503`.
@@ -91,6 +91,24 @@ Atualiza os dados de um aluno existente.
 DELETE /api/alunos/:id (requer autenticação)
 
 Remove um aluno pelo identificador.
+
+### Mensalidades
+
+`GET /api/mensalidades` lista as cobranças e aceita os filtros opcionais
+`aluno_id`, `competencia` (`AAAA-MM`) e `status` (`Pendente`, `Vencida` ou
+`Pago`).
+
+`POST /api/mensalidades` registra uma cobrança mensal. O corpo deve conter
+`aluno_id`, `competencia`, `valor` e `dia_vencimento`. Não é possível registrar
+duas cobranças para o mesmo aluno e competência; a API retorna `409`.
+
+`PUT /api/mensalidades/:id/pagamento` registra a quitação integral com
+`data_pagamento` e `valor_pago`. O valor precisa ser exatamente igual ao da
+mensalidade e a data não pode ser futura.
+
+As mensalidades preservam um histórico com nome e escola do aluno. A migração
+`supabase/migrations/20260918183000_create_mensalidades.sql` usa `ON DELETE SET NULL`
+para manter esse histórico quando um aluno é removido da operação.
 
 Payload (JSON):
 

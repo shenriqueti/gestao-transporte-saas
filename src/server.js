@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv').config();
 
 const alunoRoutes = require('./routes/alunoRoutes');
+const mensalidadeRoutes = require('./routes/mensalidadeRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3333;
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', alunoRoutes);
+app.use('/api', mensalidadeRoutes);
 
 app.get('/', (req, res) => {
     return res.sendFile(path.join(__dirname, 'public', 'login.html'));
