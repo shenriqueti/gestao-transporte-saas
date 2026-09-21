@@ -85,7 +85,7 @@ description: "Task list for Route and Boarding Management"
 - [X] T020 [US3] Implement `GET /api/embarques?rota_id=&aluno_id=&data_inicio=&data_fim=` in `src/routes/rotaRoutes.js` with inclusive date filters and snapshot fields.
 - [X] T021 [US3] Integrate history filters, result rendering, empty state, loading state, and operational errors in `src/public/auth.js` and `src/public/protected.html`.
 - [X] T022 [US3] Render responsive history cards/table with route, student snapshot, date, status, confirmation time, and responsible user in `src/public/auth.css`.
-- [ ] T023 [US3] Verify that history remains readable after operational student deletion and route deactivation in `src/routes/rotaRoutes.js` and `src/public/auth.js`.
+- [X] T023 [US3] Verify that history remains readable after operational student deletion and route deactivation in `src/routes/rotaRoutes.js` and `src/public/auth.js`.
 
 **Checkpoint**: All three user stories are independently demonstrable from the authenticated interface.
 
@@ -98,7 +98,7 @@ description: "Task list for Route and Boarding Management"
 - [X] T024 [P] Update `README.md` with the route/boarding migration, authenticated endpoints, allowed statuses, and mobile workflow.
 - [X] T025 [P] Run `node --check` on `src/routes/rotaRoutes.js`, `src/server.js`, `src/public/auth.js`, and `src/public/api-client.js`.
 - [X] T026 [P] Run `git diff --check` and inspect the final diff for secrets, tokens, personal data, and unrelated changes.
-- [ ] T027 Run every end-to-end scenario in `specs/004-route-boarding/quickstart.md`, including unauthenticated `401`, duplicate association, future consultation versus future write, idempotent update, filters, and indefinite history preservation.
+- [X] T027 Run every end-to-end scenario in `specs/004-route-boarding/quickstart.md`, including unauthenticated `401`, duplicate association, future consultation versus future write, idempotent update, filters, and indefinite history preservation.
 - [ ] T028 Measure SC-002a with five mobile runs of 20 passengers and record the completion times and pass rate in the implementation review.
 
 ---

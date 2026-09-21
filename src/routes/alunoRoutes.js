@@ -33,7 +33,7 @@ function studentPayload(body) {
 // Listar todos os alunos
 router.get('/alunos', authMiddleware, async (req, res) => {
     try {
-        const { data, error } = await supabase.from('alunos').select('*');
+        const { data, error } = await supabase.from('alunos').select('*').eq('proprietario_id', req.user.id);
         
         if (error) throw error;
         
@@ -55,7 +55,8 @@ router.post('/alunos', authMiddleware, async (req, res) => {
             .eq('nome', nome)
             .eq('escola', escola)
             .eq('responsavel', responsavel)
-            .eq('telefone', telefone);
+            .eq('telefone', telefone)
+            .eq('proprietario_id', req.user.id);
 
         if (duplicateCheckError) throw duplicateCheckError;
 
@@ -69,7 +70,7 @@ router.post('/alunos', authMiddleware, async (req, res) => {
 
         const { data, error } = await supabase
             .from('alunos')
-            .insert([payload])
+            .insert([{ ...payload, proprietario_id: req.user.id }])
             .select();
 
         if (error) throw error;
@@ -90,7 +91,8 @@ router.put('/alunos/:id', authMiddleware, async (req, res) => {
             .eq('escola', payload.escola)
             .eq('responsavel', payload.responsavel)
             .eq('telefone', payload.telefone)
-            .neq('id', req.params.id);
+            .neq('id', req.params.id)
+            .eq('proprietario_id', req.user.id);
 
         if (duplicateCheckError) throw duplicateCheckError;
 
@@ -105,6 +107,7 @@ router.put('/alunos/:id', authMiddleware, async (req, res) => {
             .from('alunos')
             .update(payload)
             .eq('id', req.params.id)
+            .eq('proprietario_id', req.user.id)
             .select();
 
         if (error) throw error;
@@ -122,6 +125,7 @@ router.delete('/alunos/:id', authMiddleware, async (req, res) => {
             .from('alunos')
             .delete()
             .eq('id', req.params.id)
+            .eq('proprietario_id', req.user.id)
             .select('id');
 
         if (error) throw error;

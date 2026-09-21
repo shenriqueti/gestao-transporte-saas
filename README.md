@@ -130,6 +130,17 @@ O histórico mantém snapshots do nome e da escola e é preservado indefinidamen
 remoção operacional do aluno. Um aluno pode participar de várias rotas, mas apenas uma
 vez em cada rota.
 
+### Modelo operacional
+
+O usuário autenticado representa o próprio motorista. Cada rota nova recebe o
+usuário autenticado como proprietário, e cada motorista visualiza apenas suas
+próprias rotas, passageiros e embarques. Rotas antigas sem proprietário devem
+ser vinculadas manualmente antes de voltarem a aparecer na operação.
+
+A migração `20260921000000_create_motoristas_veiculos.sql` foi aplicada antes
+dessa simplificação, mas suas tabelas não são mais utilizadas pela API. Elas
+podem permanecer no banco sem impacto enquanto o projeto estiver em evolução.
+
 Payload (JSON):
 
 ```json

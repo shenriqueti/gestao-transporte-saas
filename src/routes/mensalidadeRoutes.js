@@ -102,7 +102,7 @@ router.get('/mensalidades', async (req, res) => {
             throw validationError('O status informado é inválido.');
         }
 
-        let query = supabase.from('mensalidades').select('*').order('competencia', { ascending: false });
+        let query = supabase.from('mensalidades').select('*').eq('proprietario_id', req.user.id).order('competencia', { ascending: false });
         if (studentId) query = query.eq('aluno_id', studentId);
         if (competencia) query = query.eq('competencia', parseCompetence(competencia));
         const { data, error } = await query;
@@ -126,7 +126,7 @@ router.post('/mensalidades', async (req, res) => {
         const { data: student, error: studentError } = await supabase
             .from('alunos')
             .select('id, nome, escola')
-            .eq('id', alunoId)
+            .eq('id', alunoId).eq('proprietario_id', req.user.id)
             .maybeSingle();
         if (studentError) throw studentError;
         if (!student) return res.status(404).json({ error: 'Aluno não encontrado.' });
@@ -137,6 +137,7 @@ router.post('/mensalidades', async (req, res) => {
                 aluno_id: student.id,
                 aluno_nome: student.nome,
                 escola: student.escola,
+                proprietario_id: req.user.id,
                 competencia,
                 valor,
                 dia_vencimento: diaVencimento,
@@ -159,6 +160,7 @@ router.put('/mensalidades/:id/pagamento', async (req, res) => {
             .from('mensalidades')
             .select('*')
             .eq('id', req.params.id)
+            .eq('proprietario_id', req.user.id)
             .maybeSingle();
         if (findError) throw findError;
         if (!charge) return res.status(404).json({ error: 'Mensalidade não encontrada.' });
@@ -177,6 +179,7 @@ router.put('/mensalidades/:id/pagamento', async (req, res) => {
                 updated_at: new Date().toISOString()
             })
             .eq('id', req.params.id)
+            .eq('proprietario_id', req.user.id)
             .eq('status', 'Pendente')
             .select()
             .maybeSingle();

@@ -53,8 +53,9 @@ function handleError(res, operation, error) {
     return res.status(statusCode).json({ error: message });
 }
 
-async function getRoute(routeId) {
-    const { data, error } = await supabase.from('rotas').select('*').eq('id', routeId).maybeSingle();
+async function getRoute(routeId, userId) {
+    const { data, error } = await supabase.from('rotas').select('*')
+        .eq('id', routeId).eq('proprietario_id', userId).maybeSingle();
     if (error) throw error;
     if (!data) {
         const notFound = new Error('Rota não encontrada.');
@@ -69,7 +70,7 @@ router.use(authMiddleware);
 router.get('/rotas', async (req, res) => {
     try {
         const includeInactive = req.query.inativas === 'true';
-        let query = supabase.from('rotas').select('*').order('nome');
+        let query = supabase.from('rotas').select('*').eq('proprietario_id', req.user.id).order('nome');
         if (!includeInactive) query = query.eq('ativa', true);
         const { data, error } = await query;
         if (error) throw error;
@@ -87,7 +88,8 @@ router.get('/rotas', async (req, res) => {
 
 router.post('/rotas', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('rotas').insert([routePayload(req.body)]).select().single();
+        const { data, error } = await supabase.from('rotas')
+            .insert([{ ...routePayload(req.body), proprietario_id: req.user.id }]).select().single();
         if (error) throw error;
         return res.status(201).json(data);
     } catch (error) {
@@ -97,7 +99,7 @@ router.post('/rotas', async (req, res) => {
 
 router.put('/rotas/:id', async (req, res) => {
     try {
-        await getRoute(req.params.id);
+        await getRoute(req.params.id, req.user.id);
         const { data, error } = await supabase.from('rotas')
             .update({ ...routePayload(req.body), updated_at: new Date().toISOString() })
             .eq('id', req.params.id).select().single();
@@ -110,7 +112,7 @@ router.put('/rotas/:id', async (req, res) => {
 
 router.delete('/rotas/:id', async (req, res) => {
     try {
-        await getRoute(req.params.id);
+        await getRoute(req.params.id, req.user.id);
         const { error } = await supabase.from('rotas')
             .update({ ativa: false, updated_at: new Date().toISOString() }).eq('id', req.params.id);
         if (error) throw error;
@@ -122,7 +124,7 @@ router.delete('/rotas/:id', async (req, res) => {
 
 router.get('/rotas/:id/alunos', async (req, res) => {
     try {
-        await getRoute(req.params.id);
+        await getRoute(req.params.id, req.user.id);
         const { data, error } = await supabase.from('rota_alunos').select('*')
             .eq('rota_id', req.params.id).order('ordem');
         if (error) throw error;
@@ -134,11 +136,11 @@ router.get('/rotas/:id/alunos', async (req, res) => {
 
 router.post('/rotas/:id/alunos', async (req, res) => {
     try {
-        await getRoute(req.params.id);
+        await getRoute(req.params.id, req.user.id);
         const alunoId = String(req.body.aluno_id || '').trim();
         if (!alunoId) throw validationError('Selecione um aluno.');
         const { data: student, error: studentError } = await supabase.from('alunos')
-            .select('id, nome, escola').eq('id', alunoId).maybeSingle();
+            .select('id, nome, escola').eq('id', alunoId).eq('proprietario_id', req.user.id).maybeSingle();
         if (studentError) throw studentError;
         if (!student) {
             const error = new Error('Aluno não encontrado.');
@@ -172,7 +174,7 @@ router.delete('/rotas/:id/alunos/:alunoId', async (req, res) => {
 
 router.put('/rotas/:id/alunos/ordem', async (req, res) => {
     try {
-        await getRoute(req.params.id);
+        await getRoute(req.params.id, req.user.id);
         const ids = req.body.aluno_ids;
         if (!Array.isArray(ids) || ids.length === 0 || new Set(ids).size !== ids.length) {
             throw validationError('Informe a lista completa de alunos, sem repetições.');
@@ -203,7 +205,7 @@ router.put('/rotas/:id/alunos/ordem', async (req, res) => {
 
 router.get('/rotas/:id/embarques', async (req, res) => {
     try {
-        const route = await getRoute(req.params.id);
+        const route = await getRoute(req.params.id, req.user.id);
         const date = parseDate(req.query.data || new Date().toISOString().slice(0, 10));
         const { data: passengers, error: passengerError } = await supabase.from('rota_alunos')
             .select('*').eq('rota_id', route.id).order('ordem');
@@ -254,7 +256,15 @@ router.put('/rotas/:id/embarques/:alunoId', async (req, res) => {
 router.get('/embarques', async (req, res) => {
     try {
         let query = supabase.from('embarques_diarios').select('*').order('data_embarque', { ascending: false });
-        if (req.query.rota_id) query = query.eq('rota_id', req.query.rota_id);
+        if (req.query.rota_id) {
+            await getRoute(req.query.rota_id, req.user.id);
+            query = query.eq('rota_id', req.query.rota_id);
+        } else {
+            const { data: ownedRoutes, error: routeError } = await supabase.from('rotas')
+                .select('id').eq('proprietario_id', req.user.id);
+            if (routeError) throw routeError;
+            query = query.in('rota_id', ownedRoutes.map((route) => route.id));
+        }
         if (req.query.aluno_id) query = query.eq('aluno_id', req.query.aluno_id);
         if (req.query.data_inicio) query = query.gte('data_embarque', parseDate(req.query.data_inicio, 'data inicial'));
         if (req.query.data_fim) query = query.lte('data_embarque', parseDate(req.query.data_fim, 'data final'));
