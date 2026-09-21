@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Passageiros | Gestão de Transporte</title>
+  <link rel="stylesheet" href="/auth.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Gestão de Transporte Escolar</p>
+        <h1>Passageiros</h1>
+      </div>
+      <button id="logout-button" class="secondary" type="button">Sair</button>
+    </header>
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Alunos cadastrados</h2>
+        <button id="refresh-button" class="secondary" type="button">Atualizar</button>
+      </div>
+      <p id="page-message" class="message" role="status" aria-live="polite"></p>
+      <ul id="student-list" class="student-list"></ul>
+    </section>
+    <section class="panel">
+      <h2 id="form-title">Cadastrar aluno</h2>
+      <form id="student-form" class="student-form">
+        <label>Nome<input name="nome" required></label>
+        <label>Escola<input name="escola" required></label>
+        <label>Valor<input name="valor" type="number" min="0" step="0.01" required></label>
+        <label>Dia do vencimento<input name="vencimento" type="number" min="1" max="31" required></label>
+        <label>Turma<input name="turma"></label>
+        <label>Professora<input name="professora"></label>
+        <label>Responsável<input name="responsavel" required></label>
+        <label>Telefone<input name="telefone" type="tel" required></label>
+        <button type="submit">Cadastrar aluno</button>
+        <button id="cancel-edit-button" class="secondary" type="button" hidden>Cancelar edição</button>
+      </form>
+    </section>
+    <section class="panel" id="finance-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Controle financeiro</p>
+          <h2>Mensalidades</h2>
+        </div>
+        <button id="finance-refresh-button" class="secondary" type="button">Atualizar</button>
+      </div>
+      <p id="finance-message" class="message" role="status" aria-live="polite"></p>
+      <form id="charge-form" class="student-form">
+        <label>Aluno
+          <select name="aluno_id" id="charge-student" required>
+            <option value="">Selecione um aluno</option>
+          </select>
+        </label>
+        <label>Competência
+          <input name="competencia" type="month" required>
+        </label>
+        <label>Valor da mensalidade
+          <input name="valor" type="number" min="0.01" step="0.01" required>
+        </label>
+        <label>Dia do vencimento
+          <input name="dia_vencimento" type="number" min="1" max="31" required>
+        </label>
+        <button type="submit">Registrar mensalidade</button>
+      </form>
+      <div class="finance-filters">
+        <label>Filtrar aluno
+          <select id="finance-student-filter">
+            <option value="">Todos os alunos</option>
+          </select>
+        </label>
+        <label>Filtrar competência
+          <input id="finance-competence-filter" type="month">
+        </label>
+        <label>Status
+          <select id="finance-status-filter">
+            <option value="">Todos</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Vencida">Vencida</option>
+            <option value="Pago">Pago</option>
+          </select>
+        </label>
+      </div>
+      <ul id="charge-list" class="charge-list"></ul>
+    </section>
+    <section class="panel" id="route-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Operação diária</p>
+          <h2>Rotas e embarques</h2>
+        </div>
+        <button id="route-refresh-button" class="secondary" type="button">Atualizar</button>
+      </div>
+      <p id="route-message" class="message" role="status" aria-live="polite"></p>
+      <form id="route-form" class="student-form">
+        <label>Nome da rota<input name="nome" required></label>
+        <label>Descrição<input name="descricao"></label>
+        <button type="submit">Criar rota</button>
+        <button id="route-cancel-button" class="secondary" type="button" hidden>Cancelar edição</button>
+      </form>
+      <div class="route-controls">
+        <label>Rota
+          <select id="route-selector"><option value="">Selecione uma rota</option></select>
+        </label>
+        <label>Adicionar aluno
+          <select id="route-student-selector"><option value="">Selecione um aluno</option></select>
+        </label>
+        <button id="add-route-student-button" type="button">Adicionar passageiro</button>
+      </div>
+      <ul id="route-list" class="route-list"></ul>
+      <div id="route-passenger-panel" hidden>
+        <h3>Passageiros da rota</h3>
+        <p class="muted">Use subir/descer para definir a ordem de atendimento.</p>
+        <ul id="route-passenger-list" class="route-list"></ul>
+      </div>
+      <div class="boarding-controls">
+        <label>Data do embarque<input id="boarding-date" type="date"></label>
+        <button id="load-boarding-button" type="button">Carregar embarques</button>
+      </div>
+      <ul id="boarding-list" class="boarding-list"></ul>
+      <div class="history-heading">
+        <h3>Histórico de embarques</h3>
+      </div>
+      <div class="route-controls">
+        <label>Data inicial<input id="history-start" type="date"></label>
+        <label>Data final<input id="history-end" type="date"></label>
+        <button id="load-history-button" type="button">Consultar histórico</button>
+      </div>
+      <ul id="history-list" class="boarding-list"></ul>
+    </section>
+  </main>
+  <script src="/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/api-client.js"></script>
+  <script src="/auth.js"></script>
+</body>
+</html>
